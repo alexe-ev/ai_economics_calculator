@@ -76,7 +76,6 @@ const agentCost: AgentCostInput = {
 };
 
 const unitEconomics: UnitEconomicsInput = {
-  subscriptionPrice: 40,
   numUsers: 200,
   inferenceCostMonthly: 3768,
   embeddingCostMonthly: 20,
@@ -86,9 +85,9 @@ const unitEconomics: UnitEconomicsInput = {
   errorOverheadPct: 0.15,
   safetyOverheadPct: 0.10,
   segments: [
-    { name: "Light", userPct: 0.6, avgRequestsPerMonth: 300, avgCostPerRequest: 0.015 },
-    { name: "Regular", userPct: 0.3, avgRequestsPerMonth: 500, avgCostPerRequest: 0.055 },
-    { name: "Power", userPct: 0.1, avgRequestsPerMonth: 1200, avgCostPerRequest: 0.08 },
+    { name: "Light", userPct: 0.6, avgRequestsPerMonth: 300, avgCostPerRequest: 0.015, revenuePerUser: 0 },
+    { name: "Regular", userPct: 0.3, avgRequestsPerMonth: 500, avgCostPerRequest: 0.055, revenuePerUser: 29 },
+    { name: "Power", userPct: 0.1, avgRequestsPerMonth: 1200, avgCostPerRequest: 0.08, revenuePerUser: 99 },
   ],
   humanCostPerOutcome: 10,
   aiResolutionRate: 0.6,
