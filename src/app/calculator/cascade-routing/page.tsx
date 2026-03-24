@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
+import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   BarChart,
   Bar,
@@ -15,6 +16,7 @@ import { CascadeRoutingInput, CascadeTier } from "@/lib/types";
 import { MODEL_PRICES, getModel } from "@/lib/data/models";
 import { calculateCascadeRouting } from "@/lib/calculations/cascade-routing";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { formatCurrency, formatPct, formatNumber } from "@/lib/utils";
 import { NumberInput } from "@/components/inputs/number-input";
 import { SliderInput } from "@/components/inputs/slider-input";
@@ -52,7 +54,7 @@ const DEFAULT_INPUT: CascadeRoutingInput = {
 };
 
 export default function CascadeRoutingPage() {
-  const [input, setInput] = useState<CascadeRoutingInput>(DEFAULT_INPUT);
+  const [input, setInput] = usePersistedState<CascadeRoutingInput>(STORAGE_KEYS.cascadeRouting, DEFAULT_INPUT);
   const setCascadeRouting = useCalculatorStore((s) => s.setCascadeRouting);
   const tokenCost = useCalculatorStore((s) => s.tokenCost);
 
@@ -536,6 +538,7 @@ export default function CascadeRoutingPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value, name) => {
@@ -545,6 +548,7 @@ export default function CascadeRoutingPage() {
                             : TIER_LABELS[Number(String(name).replace("tier", ""))] ?? name;
                         return [formatCurrency(Number(value), 2), String(label)];
                       }}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                     <Legend
                       wrapperStyle={{ fontSize: "11px" }}
@@ -621,9 +625,12 @@ export default function CascadeRoutingPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value) => [formatCurrency(Number(value), 2), "Monthly"]}
+                      itemStyle={{ color: "#E5E5E5" }}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                     <Bar dataKey="cost" radius={[3, 3, 0, 0]}>
                       {[

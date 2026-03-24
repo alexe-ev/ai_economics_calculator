@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   BarChart,
   Bar,
@@ -17,6 +18,7 @@ import { TokenCostInput, TokenCostOutput, ModelComparisonRow } from "@/lib/types
 import { MODEL_PRICES, LANGUAGE_MULTIPLIERS, getModel } from "@/lib/data/models";
 import { calculateTokenCost } from "@/lib/calculations/token-cost";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { formatCurrency, formatPct, formatTokens, formatNumber } from "@/lib/utils";
 import { NumberInput } from "@/components/inputs/number-input";
 import { SliderInput } from "@/components/inputs/slider-input";
@@ -57,7 +59,7 @@ const DEFAULT_INPUT: TokenCostInput = {
 };
 
 export default function TokenCostPage() {
-  const [input, setInput] = useState<TokenCostInput>(DEFAULT_INPUT);
+  const [input, setInput] = usePersistedState<TokenCostInput>(STORAGE_KEYS.tokenCost, DEFAULT_INPUT);
   const setTokenCost = useCalculatorStore((s) => s.setTokenCost);
 
   const output = useMemo(() => calculateTokenCost(input), [input]);
@@ -401,9 +403,11 @@ export default function TokenCostPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value) => [formatCurrency(Number(value), 6), "Cost/Req"]}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                     <Bar
                       dataKey="costPerRequest"
@@ -456,8 +460,10 @@ export default function TokenCostPage() {
                           border: "1px solid #2A2A2A",
                           borderRadius: "6px",
                           fontSize: "12px",
+                          color: "#E5E5E5",
                         }}
                         formatter={(value) => [formatCurrency(Number(value), 6), "Cost"]}
+                        cursor={{ fill: "rgba(255,255,255,0.05)" }}
                       />
                       <Legend
                         wrapperStyle={{ fontSize: "11px", color: "#999999" }}

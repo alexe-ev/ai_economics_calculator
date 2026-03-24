@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
+import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   BarChart,
   Bar,
@@ -12,6 +13,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { calculateOptimizationStack } from "@/lib/calculations/optimization-stack";
 import { OptimizationInput } from "@/lib/types";
 import { formatCurrency, formatPct, formatNumber } from "@/lib/utils";
@@ -33,7 +35,7 @@ const EFFORT_MAP: Record<string, string> = {
 export default function OptimizationStackPage() {
   const { tokenCost, setOptimization } = useCalculatorStore();
 
-  const [input, setInput] = useState<OptimizationInput>({
+  const [input, setInput] = usePersistedState<OptimizationInput>(STORAGE_KEYS.optimization, {
     inputTokens: 1000,
     outputTokens: 500,
     inputPricePerMTok: 3.0,
@@ -415,6 +417,7 @@ export default function OptimizationStackPage() {
                       border: "1px solid #2A2A2A",
                       borderRadius: 6,
                       fontSize: 12,
+                      color: "#E5E5E5",
                     }}
                     labelStyle={{ color: "#E5E5E5" }}
                     formatter={(value, name) => {
@@ -422,6 +425,7 @@ export default function OptimizationStackPage() {
                       return [formatCurrency(Number(value), 2), "Amount"];
                     }}
                     itemStyle={{ color: "#E5E5E5" }}
+                    cursor={{ fill: "rgba(255,255,255,0.05)" }}
                   />
                   <ReferenceLine y={0} stroke="#2A2A2A" />
                   {/* Invisible base bar for stacking */}

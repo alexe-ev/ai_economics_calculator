@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -12,6 +11,7 @@ import {
   FileText,
   ChevronRight,
 } from "lucide-react";
+import { DEMO_PRESET, loadPreset, clearPreset } from "@/lib/data/presets";
 
 const NAV_GROUPS = [
   {
@@ -91,7 +91,7 @@ export default function CalculatorLayout({
                 const isDownstream = downstreamModules.includes(item.href);
                 const Icon = item.icon;
                 return (
-                  <Link
+                  <a
                     key={item.href}
                     href={item.href}
                     className={cn(
@@ -107,12 +107,35 @@ export default function CalculatorLayout({
                     {isDownstream && (
                       <ChevronRight size={12} className="text-accent/50" />
                     )}
-                  </Link>
+                  </a>
                 );
               })}
             </div>
           ))}
         </nav>
+        <div className="p-4 border-t border-border flex flex-col gap-2">
+          <button
+            onClick={() => {
+              loadPreset(DEMO_PRESET);
+              window.location.href = "/calculator/token-cost";
+            }}
+            className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors text-left"
+          >
+            Load demo data
+            <span className="block text-[10px] font-normal text-white/70 mt-0.5">
+              B2B support copilot, 80K tickets/mo
+            </span>
+          </button>
+          <button
+            onClick={() => {
+              clearPreset();
+              window.location.reload();
+            }}
+            className="w-full rounded border border-border px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:border-text-muted transition-colors"
+          >
+            Reset all
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
