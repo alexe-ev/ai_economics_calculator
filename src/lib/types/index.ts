@@ -259,6 +259,7 @@ export interface SharedCalculatorState {
     monthlyCost: number;
     inputPricePerMTok: number;
     outputPricePerMTok: number;
+    requestsPerMonth: number;
   };
   // From Optimization Stack (2.2)
   optimization?: {

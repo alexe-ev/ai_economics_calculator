@@ -126,6 +126,10 @@ export function loadPreset(preset: typeof DEMO_PRESET): void {
     localStorage.setItem(STORAGE_KEYS.unitEconomics, JSON.stringify(preset.unitEconomics));
     localStorage.setItem(STORAGE_KEYS.economicsBrief, JSON.stringify(preset.economicsBrief));
     localStorage.removeItem(STORAGE_KEYS.zustand);
+    localStorage.removeItem(STORAGE_KEYS.optimizationOverrides);
+    localStorage.removeItem(STORAGE_KEYS.cascadeOverrides);
+    localStorage.removeItem(STORAGE_KEYS.unitEconomicsOverrides);
+    localStorage.removeItem(STORAGE_KEYS.economicsBriefOverrides);
   } catch {
     // localStorage full or unavailable
   }
