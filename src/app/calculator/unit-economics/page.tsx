@@ -44,13 +44,12 @@ const MARGIN_ZONE_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_SEGMENTS: UserSegment[] = [
-  { name: "Light", userPct: 0.6, avgRequestsPerMonth: 20, avgCostPerRequest: 0.05 },
-  { name: "Regular", userPct: 0.3, avgRequestsPerMonth: 100, avgCostPerRequest: 0.08 },
-  { name: "Power", userPct: 0.1, avgRequestsPerMonth: 500, avgCostPerRequest: 0.12 },
+  { name: "Light", userPct: 0.6, avgRequestsPerMonth: 20, avgCostPerRequest: 0.05, revenuePerUser: 19 },
+  { name: "Regular", userPct: 0.3, avgRequestsPerMonth: 100, avgCostPerRequest: 0.08, revenuePerUser: 49 },
+  { name: "Power", userPct: 0.1, avgRequestsPerMonth: 500, avgCostPerRequest: 0.12, revenuePerUser: 99 },
 ];
 
 const DEFAULT_INPUT: UnitEconomicsInput = {
-  subscriptionPrice: 49,
   numUsers: 1000,
   inferenceCostMonthly: 5000,
   embeddingCostMonthly: 200,
@@ -84,7 +83,7 @@ export default function UnitEconomicsPage() {
 
   const output = useMemo(() => calculateUnitEconomics(input), [input]);
 
-  const mrr = input.subscriptionPrice * input.numUsers;
+  const mrr = output.mrr;
 
   useEffect(() => {
     setUnitEconomics({
@@ -110,7 +109,7 @@ export default function UnitEconomicsPage() {
       ...prev,
       segments: [
         ...prev.segments,
-        { name: "New", userPct: 0.1, avgRequestsPerMonth: 50, avgCostPerRequest: 0.06 },
+        { name: "New", userPct: 0.1, avgRequestsPerMonth: 50, avgCostPerRequest: 0.06, revenuePerUser: 29 },
       ],
     }));
   }
@@ -147,6 +146,14 @@ export default function UnitEconomicsPage() {
       header: "Segment",
       render: (row: SegmentAnalysis) => (
         <span className="text-text-primary font-medium">{row.name}</span>
+      ),
+    },
+    {
+      key: "revenuePerUser",
+      header: "Rev/user",
+      align: "right" as const,
+      render: (row: SegmentAnalysis) => (
+        <span className="text-text-primary">{formatCurrency(row.revenuePerUser, 0)}</span>
       ),
     },
     {
@@ -218,17 +225,6 @@ export default function UnitEconomicsPage() {
             </CardHeader>
             <div className="space-y-3">
               <NumberInput
-                label="Subscription price"
-                value={input.subscriptionPrice}
-                onChange={(v) =>
-                  setInput((prev) => ({ ...prev, subscriptionPrice: Math.max(0, v) }))
-                }
-                min={0}
-                step={1}
-                prefix="$"
-                suffix="/mo"
-              />
-              <NumberInput
                 label="Number of users"
                 value={input.numUsers}
                 onChange={(v) =>
@@ -238,7 +234,7 @@ export default function UnitEconomicsPage() {
                 step={100}
               />
               <div className="space-y-1">
-                <label className="text-xs text-text-secondary">MRR</label>
+                <label className="text-xs text-text-secondary">MRR (computed from segments)</label>
                 <p className="text-sm font-mono text-text-primary">
                   {formatCurrency(mrr, 2)}
                 </p>
@@ -366,6 +362,17 @@ export default function UnitEconomicsPage() {
                       </button>
                     )}
                   </div>
+                  <NumberInput
+                    label="Revenue/user"
+                    value={seg.revenuePerUser}
+                    onChange={(v) =>
+                      updateSegment(i, { revenuePerUser: Math.max(0, v) })
+                    }
+                    min={0}
+                    step={5}
+                    prefix="$"
+                    suffix="/mo"
+                  />
                   <NumberInput
                     label="% of users"
                     value={Math.round(seg.userPct * 100)}
@@ -688,7 +695,7 @@ export default function UnitEconomicsPage() {
             <CardHeader>
               <CardTitle>Per-Segment Analysis</CardTitle>
               <CardDescription>
-                COGS and margin by user segment (subscription: {formatCurrency(input.subscriptionPrice, 2)}/user)
+                COGS and margin by user segment (MRR: {formatCurrency(mrr, 2)})
               </CardDescription>
             </CardHeader>
             <DataTable columns={segmentColumns} data={output.segments} />

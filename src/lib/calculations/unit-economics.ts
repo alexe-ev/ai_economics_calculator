@@ -9,7 +9,6 @@ export function calculateUnitEconomics(
   input: UnitEconomicsInput
 ): UnitEconomicsOutput {
   const {
-    subscriptionPrice,
     numUsers,
     inferenceCostMonthly,
     embeddingCostMonthly,
@@ -24,8 +23,13 @@ export function calculateUnitEconomics(
     totalRequestsPerMonth,
   } = input;
 
-  const revenuePerUser = subscriptionPrice;
-  const mrr = subscriptionPrice * numUsers;
+  // MRR = sum of (revenuePerUser * users) for each segment
+  const mrr = segments.reduce(
+    (acc, seg) => acc + seg.revenuePerUser * Math.round(seg.userPct * numUsers),
+    0
+  );
+  // Weighted average revenue per user
+  const revenuePerUser = numUsers > 0 ? mrr / numUsers : 0;
 
   // Base COGS (before overhead multipliers)
   const baseCogs =
@@ -80,8 +84,8 @@ export function calculateUnitEconomics(
     const segCogsWithOverhead =
       segCogsPerUser * (1 + errorOverheadPct + safetyOverheadPct);
     const segMargin =
-      revenuePerUser > 0
-        ? ((revenuePerUser - segCogsWithOverhead) / revenuePerUser) * 100
+      seg.revenuePerUser > 0
+        ? ((seg.revenuePerUser - segCogsWithOverhead) / seg.revenuePerUser) * 100
         : 0;
 
     return {
@@ -89,8 +93,9 @@ export function calculateUnitEconomics(
       users,
       requestsPerMonth: seg.avgRequestsPerMonth,
       cogsPerUser: segCogsWithOverhead,
+      revenuePerUser: seg.revenuePerUser,
       margin: segMargin,
-      isNegativeMargin: segMargin < 0,
+      isNegativeMargin: segCogsWithOverhead > seg.revenuePerUser,
     };
   });
 
@@ -124,6 +129,7 @@ export function calculateUnitEconomics(
     marginZone,
     cogsPerUser,
     revenuePerUser,
+    mrr,
     grossProfitPerUser,
     segments: segmentAnalysis,
     costPerResolved,

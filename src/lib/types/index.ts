@@ -178,9 +178,7 @@ export interface AgentStepCost {
 // Module 2.9: Unit Economics Dashboard
 export interface UnitEconomicsInput {
   // Revenue
-  subscriptionPrice: number;
   numUsers: number;
-  mrr?: number;
   // COGS
   inferenceCostMonthly: number;
   embeddingCostMonthly: number;
@@ -202,6 +200,7 @@ export interface UserSegment {
   userPct: number; // 0-1
   avgRequestsPerMonth: number;
   avgCostPerRequest: number;
+  revenuePerUser: number;
 }
 
 export interface UnitEconomicsOutput {
@@ -211,6 +210,7 @@ export interface UnitEconomicsOutput {
   marginZone: "healthy" | "monitor" | "action" | "critical";
   cogsPerUser: number;
   revenuePerUser: number;
+  mrr: number;
   grossProfitPerUser: number;
   segments: SegmentAnalysis[];
   costPerResolved: number;
@@ -223,6 +223,7 @@ export interface SegmentAnalysis {
   users: number;
   requestsPerMonth: number;
   cogsPerUser: number;
+  revenuePerUser: number;
   margin: number;
   isNegativeMargin: boolean;
 }
