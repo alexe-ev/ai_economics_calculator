@@ -6,4 +6,8 @@ export const STORAGE_KEYS = {
   unitEconomics: "calc-unit-economics",
   economicsBrief: "calc-economics-brief",
   zustand: "ai-econ-calculator",
+  optimizationOverrides: "calc-optimization-stack-overrides",
+  cascadeOverrides: "calc-cascade-routing-overrides",
+  unitEconomicsOverrides: "calc-unit-economics-overrides",
+  economicsBriefOverrides: "calc-economics-brief-overrides",
 } as const;

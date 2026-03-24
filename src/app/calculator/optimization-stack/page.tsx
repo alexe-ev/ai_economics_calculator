@@ -23,7 +23,7 @@ import { SliderInput } from "@/components/inputs/slider-input";
 import { ToggleInput } from "@/components/inputs/toggle-input";
 import { StatCard } from "@/components/outputs/stat-card";
 import { DataTable } from "@/components/outputs/data-table";
-import { Download } from "lucide-react";
+import { useFieldSync } from "@/lib/hooks/use-field-sync";
 
 const EFFORT_MAP: Record<string, string> = {
   "Output Limits": "Low",
@@ -53,6 +53,21 @@ export default function OptimizationStackPage() {
     contextReductionPct: 0.3,
   });
 
+  const syncConfig = useMemo(() => [
+    { field: "inputTokens", upstream: () => tokenCost?.inputTokens, source: "Token Cost" },
+    { field: "outputTokens", upstream: () => tokenCost?.outputTokens, source: "Token Cost" },
+    { field: "inputPricePerMTok", upstream: () => tokenCost?.inputPricePerMTok, source: "Token Cost" },
+    { field: "outputPricePerMTok", upstream: () => tokenCost?.outputPricePerMTok, source: "Token Cost" },
+    { field: "requestsPerMonth", upstream: () => tokenCost?.requestsPerMonth, source: "Token Cost" },
+  ], [tokenCost]);
+
+  const { markOverride, resetField, getSyncSource, isFieldOverridden } = useFieldSync(
+    input,
+    setInput,
+    syncConfig,
+    STORAGE_KEYS.optimizationOverrides,
+  );
+
   const output = useMemo(() => calculateOptimizationStack(input), [input]);
 
   // Sync to Zustand store
@@ -63,19 +78,6 @@ export default function OptimizationStackPage() {
       savingsPct: output.cumulativeSavingsPct,
     });
   }, [output, setOptimization]);
-
-  function pullFromTokenCost() {
-    if (!tokenCost) return;
-    setInput((prev) => ({
-      ...prev,
-      inputTokens: tokenCost.inputTokens,
-      outputTokens: tokenCost.outputTokens,
-      inputPricePerMTok: tokenCost.inputPricePerMTok,
-      outputPricePerMTok: tokenCost.outputPricePerMTok,
-      newOutputTokens: Math.round(tokenCost.outputTokens * 0.6),
-      cachedPrefixTokens: Math.round(tokenCost.inputTokens * 0.6),
-    }));
-  }
 
   function update(patch: Partial<OptimizationInput>) {
     setInput((prev) => ({ ...prev, ...patch }));
@@ -184,23 +186,13 @@ export default function OptimizationStackPage() {
   return (
     <div className="p-6 max-w-[1400px] mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-text-primary">
-            Optimization Stack Simulator
-          </h2>
-          <p className="text-xs text-text-secondary mt-1">
-            Model cost reduction through stacked optimizations. Each layer compounds on previous savings.
-          </p>
-        </div>
-        <button
-          onClick={pullFromTokenCost}
-          disabled={!tokenCost}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded border border-border text-text-secondary hover:text-accent hover:border-accent transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          <Download size={14} />
-          Pull from Token Cost
-        </button>
+      <div>
+        <h2 className="text-lg font-semibold text-text-primary">
+          Optimization Stack Simulator
+        </h2>
+        <p className="text-xs text-text-secondary mt-1">
+          Model cost reduction through stacked optimizations. Each layer compounds on previous savings.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
@@ -216,42 +208,52 @@ export default function OptimizationStackPage() {
               <NumberInput
                 label="Input tokens"
                 value={input.inputTokens}
-                onChange={(v) => update({ inputTokens: v })}
+                onChange={(v) => { update({ inputTokens: v }); markOverride("inputTokens"); }}
                 min={0}
                 step={100}
+                syncSource={getSyncSource("inputTokens") ?? undefined}
+                onSyncReset={isFieldOverridden("inputTokens") ? () => resetField("inputTokens") : undefined}
               />
               <NumberInput
                 label="Output tokens"
                 value={input.outputTokens}
-                onChange={(v) => update({ outputTokens: v })}
+                onChange={(v) => { update({ outputTokens: v }); markOverride("outputTokens"); }}
                 min={0}
                 step={100}
+                syncSource={getSyncSource("outputTokens") ?? undefined}
+                onSyncReset={isFieldOverridden("outputTokens") ? () => resetField("outputTokens") : undefined}
               />
               <NumberInput
                 label="Input price"
                 value={input.inputPricePerMTok}
-                onChange={(v) => update({ inputPricePerMTok: v })}
+                onChange={(v) => { update({ inputPricePerMTok: v }); markOverride("inputPricePerMTok"); }}
                 min={0}
                 step={0.1}
                 prefix="$"
                 suffix="/MTok"
+                syncSource={getSyncSource("inputPricePerMTok") ?? undefined}
+                onSyncReset={isFieldOverridden("inputPricePerMTok") ? () => resetField("inputPricePerMTok") : undefined}
               />
               <NumberInput
                 label="Output price"
                 value={input.outputPricePerMTok}
-                onChange={(v) => update({ outputPricePerMTok: v })}
+                onChange={(v) => { update({ outputPricePerMTok: v }); markOverride("outputPricePerMTok"); }}
                 min={0}
                 step={0.1}
                 prefix="$"
                 suffix="/MTok"
+                syncSource={getSyncSource("outputPricePerMTok") ?? undefined}
+                onSyncReset={isFieldOverridden("outputPricePerMTok") ? () => resetField("outputPricePerMTok") : undefined}
               />
               <NumberInput
                 label="Requests / month"
                 value={input.requestsPerMonth}
-                onChange={(v) => update({ requestsPerMonth: v })}
+                onChange={(v) => { update({ requestsPerMonth: v }); markOverride("requestsPerMonth"); }}
                 min={0}
                 step={1000}
                 className="col-span-2"
+                syncSource={getSyncSource("requestsPerMonth") ?? undefined}
+                onSyncReset={isFieldOverridden("requestsPerMonth") ? () => resetField("requestsPerMonth") : undefined}
               />
             </div>
           </Card>

@@ -77,6 +77,7 @@ export default function TokenCostPage() {
       monthlyCost: output.monthlyCost,
       inputPricePerMTok: model.inputPricePerMTok,
       outputPricePerMTok: model.outputPricePerMTok,
+      requestsPerMonth: input.requestsPerMonth,
     });
   }, [output, input, model, setTokenCost]);
 

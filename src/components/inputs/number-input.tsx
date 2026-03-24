@@ -13,6 +13,8 @@ interface NumberInputProps {
   prefix?: string;
   hint?: string;
   className?: string;
+  syncSource?: string;
+  onSyncReset?: () => void;
 }
 
 export function NumberInput({
@@ -26,6 +28,8 @@ export function NumberInput({
   prefix,
   hint,
   className,
+  syncSource,
+  onSyncReset,
 }: NumberInputProps) {
   return (
     <div className={cn("space-y-1", className)}>
@@ -48,6 +52,31 @@ export function NumberInput({
         )}
       </div>
       {hint && <p className="text-[10px] text-text-muted">{hint}</p>}
+      {syncSource && (
+        <p className="text-[10px] text-accent flex items-center gap-1">
+          <span>from {syncSource}</span>
+          {onSyncReset && (
+            <button
+              type="button"
+              onClick={onSyncReset}
+              className="text-text-muted hover:text-text-primary underline"
+            >
+              reset
+            </button>
+          )}
+        </p>
+      )}
+      {!syncSource && onSyncReset && (
+        <p className="text-[10px] text-text-muted">
+          <button
+            type="button"
+            onClick={onSyncReset}
+            className="hover:text-text-primary underline"
+          >
+            sync from upstream
+          </button>
+        </p>
+      )}
     </div>
   );
 }
