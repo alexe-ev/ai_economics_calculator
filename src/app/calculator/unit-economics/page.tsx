@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   PieChart,
   Pie,
@@ -15,6 +16,7 @@ import {
 import { UnitEconomicsInput, UserSegment, SegmentAnalysis } from "@/lib/types";
 import { calculateUnitEconomics } from "@/lib/calculations/unit-economics";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { MARGIN_ZONES } from "@/lib/data/thresholds";
 import { formatCurrency, formatNumber, formatPct, cn } from "@/lib/utils";
 import { NumberInput } from "@/components/inputs/number-input";
@@ -63,7 +65,7 @@ const DEFAULT_INPUT: UnitEconomicsInput = {
 };
 
 export default function UnitEconomicsPage() {
-  const [input, setInput] = useState<UnitEconomicsInput>(DEFAULT_INPUT);
+  const [input, setInput] = usePersistedState<UnitEconomicsInput>(STORAGE_KEYS.unitEconomics, DEFAULT_INPUT);
   const setUnitEconomics = useCalculatorStore((s) => s.setUnitEconomics);
   const agentCost = useCalculatorStore((s) => s.agentCost);
 
@@ -563,12 +565,14 @@ export default function UnitEconomicsPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value, name) => [
                         formatCurrency(Number(value), 2),
                         String(name),
                       ]}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -630,9 +634,12 @@ export default function UnitEconomicsPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value) => [formatCurrency(Number(value), 2), "Cost"]}
+                      itemStyle={{ color: "#E5E5E5" }}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                     <Bar dataKey="cost" radius={[4, 4, 0, 0]}>
                       <Cell fill="#4F7FFF" />

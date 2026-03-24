@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import { EconomicsBriefInput } from "@/lib/types";
 import { MODEL_PRICES, getModel } from "@/lib/data/models";
 import { generateEconomicsBrief } from "@/lib/calculations/economics-brief";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { formatCurrency, formatPct } from "@/lib/utils";
 import { NumberInput } from "@/components/inputs/number-input";
 import { SelectInput } from "@/components/inputs/select-input";
@@ -30,7 +32,7 @@ const DEFAULT_INPUT: EconomicsBriefInput = {
 };
 
 export default function EconomicsBriefPage() {
-  const [input, setInput] = useState<EconomicsBriefInput>(DEFAULT_INPUT);
+  const [input, setInput] = usePersistedState<EconomicsBriefInput>(STORAGE_KEYS.economicsBrief, DEFAULT_INPUT);
   const [monthlyManualOverride, setMonthlyManualOverride] = useState(false);
   const [costManualOverride, setCostManualOverride] = useState(false);
   const [monthlyCostManualOverride, setMonthlyCostManualOverride] = useState(false);

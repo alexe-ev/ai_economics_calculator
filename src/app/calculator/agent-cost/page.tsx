@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   AreaChart,
   Area,
@@ -15,6 +16,7 @@ import { AgentCostInput, AgentStep, AgentStepCost } from "@/lib/types";
 import { MODEL_PRICES } from "@/lib/data/models";
 import { calculateAgentCost } from "@/lib/calculations/agent-cost";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { formatCurrency, formatPct, formatTokens } from "@/lib/utils";
 import { NumberInput } from "@/components/inputs/number-input";
 import { SliderInput } from "@/components/inputs/slider-input";
@@ -54,7 +56,7 @@ const DEFAULT_INPUT: AgentCostInput = {
 };
 
 export default function AgentCostPage() {
-  const [input, setInput] = useState<AgentCostInput>(DEFAULT_INPUT);
+  const [input, setInput] = usePersistedState<AgentCostInput>(STORAGE_KEYS.agentCost, DEFAULT_INPUT);
   const setAgentCost = useCalculatorStore((s) => s.setAgentCost);
 
   const output = useMemo(() => calculateAgentCost(input), [input]);
@@ -535,12 +537,14 @@ export default function AgentCostPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value, name) => [
                         formatTokens(Number(value)),
                         name === "context" ? "Context" : "Effective Input",
                       ]}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                     <Area
                       type="monotone"
@@ -588,12 +592,14 @@ export default function AgentCostPage() {
                         border: "1px solid #2A2A2A",
                         borderRadius: "6px",
                         fontSize: "12px",
+                        color: "#E5E5E5",
                       }}
                       labelStyle={{ color: "#E5E5E5" }}
                       formatter={(value, name) => [
                         formatCurrency(Number(value), 6),
                         name === "inputCost" ? "Input Cost" : "Output Cost",
                       ]}
+                      cursor={{ fill: "rgba(255,255,255,0.05)" }}
                     />
                     <Bar
                       dataKey="inputCost"
