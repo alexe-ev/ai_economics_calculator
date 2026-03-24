@@ -8,6 +8,8 @@ interface SelectInputProps {
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   className?: string;
+  syncSource?: string;
+  onSyncReset?: () => void;
 }
 
 export function SelectInput({
@@ -16,6 +18,8 @@ export function SelectInput({
   onChange,
   options,
   className,
+  syncSource,
+  onSyncReset,
 }: SelectInputProps) {
   return (
     <div className={cn("space-y-1", className)}>
@@ -31,6 +35,31 @@ export function SelectInput({
           </option>
         ))}
       </select>
+      {syncSource && (
+        <p className="text-[10px] text-accent flex items-center gap-1">
+          <span>from {syncSource}</span>
+          {onSyncReset && (
+            <button
+              type="button"
+              onClick={onSyncReset}
+              className="text-text-muted hover:text-text-primary underline"
+            >
+              reset
+            </button>
+          )}
+        </p>
+      )}
+      {!syncSource && onSyncReset && (
+        <p className="text-[10px] text-text-muted">
+          <button
+            type="button"
+            onClick={onSyncReset}
+            className="hover:text-text-primary underline"
+          >
+            sync from upstream
+          </button>
+        </p>
+      )}
     </div>
   );
 }

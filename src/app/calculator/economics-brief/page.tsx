@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useFieldSync } from "@/lib/hooks/use-field-sync";
 import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import { EconomicsBriefInput } from "@/lib/types";
 import { MODEL_PRICES, getModel } from "@/lib/data/models";
@@ -40,6 +41,20 @@ export default function EconomicsBriefPage() {
 
   const tokenCost = useCalculatorStore((s) => s.tokenCost);
   const unitEconomics = useCalculatorStore((s) => s.unitEconomics);
+
+  const syncConfig = useMemo(() => [
+    { field: "inputTokens", upstream: () => tokenCost?.inputTokens, source: "Token Cost" },
+    { field: "outputTokens", upstream: () => tokenCost?.outputTokens, source: "Token Cost" },
+    { field: "modelId", upstream: () => tokenCost?.modelId, source: "Token Cost" },
+    { field: "humanCostPerUnit", upstream: () => unitEconomics?.humanCostPerOutcome, source: "Unit Economics" },
+  ], [tokenCost, unitEconomics]);
+
+  const { markOverride, resetField, getSyncSource, isFieldOverridden } = useFieldSync(
+    input,
+    setInput,
+    syncConfig,
+    STORAGE_KEYS.economicsBriefOverrides,
+  );
 
   const model = getModel(input.modelId);
 
@@ -82,30 +97,6 @@ export default function EconomicsBriefPage() {
     setInput((prev) => ({ ...prev, [key]: value }));
   }
 
-  const pullFromTokenCost = useCallback(() => {
-    if (!tokenCost) return;
-    setInput((prev) => ({
-      ...prev,
-      inputTokens: tokenCost.inputTokens,
-      outputTokens: tokenCost.outputTokens,
-      modelId: tokenCost.modelId,
-      costPerRequest: tokenCost.costPerRequest,
-      monthlyCost: tokenCost.monthlyCost,
-    }));
-    setCostManualOverride(false);
-    setMonthlyCostManualOverride(false);
-  }, [tokenCost]);
-
-  const pullFromUnitEconomics = useCallback(() => {
-    if (!unitEconomics) return;
-    // Unit economics provides COGS per user and margin context
-    // We can use it to inform the human cost comparison
-    setInput((prev) => ({
-      ...prev,
-      humanCostPerUnit: unitEconomics.cogsPerUser > 0 ? unitEconomics.cogsPerUser : prev.humanCostPerUnit,
-    }));
-  }, [unitEconomics]);
-
   const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(output.brief).then(() => {
       setCopied(true);
@@ -123,30 +114,6 @@ export default function EconomicsBriefPage() {
         <p className="text-xs text-text-secondary mt-1">
           Module 2.13: Generate a structured economics brief for AI feature launches.
         </p>
-      </div>
-
-      {/* Pull buttons */}
-      <div className="flex gap-3 mb-6">
-        <button
-          onClick={pullFromTokenCost}
-          disabled={!tokenCost}
-          className="px-3 py-1.5 text-xs font-medium rounded border border-border bg-bg-card text-text-secondary hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        >
-          Pull from Token Cost
-          {tokenCost && (
-            <span className="ml-1.5 text-[10px] text-positive">ready</span>
-          )}
-        </button>
-        <button
-          onClick={pullFromUnitEconomics}
-          disabled={!unitEconomics}
-          className="px-3 py-1.5 text-xs font-medium rounded border border-border bg-bg-card text-text-secondary hover:bg-bg-hover hover:text-text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        >
-          Pull from Unit Economics
-          {unitEconomics && (
-            <span className="ml-1.5 text-[10px] text-positive">ready</span>
-          )}
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -180,18 +147,22 @@ export default function EconomicsBriefPage() {
               <NumberInput
                 label="Input tokens"
                 value={input.inputTokens}
-                onChange={(v) => update("inputTokens", Math.max(0, v))}
+                onChange={(v) => { update("inputTokens", Math.max(0, v)); markOverride("inputTokens"); }}
                 min={0}
                 step={100}
                 suffix="tokens"
+                syncSource={getSyncSource("inputTokens") ?? undefined}
+                onSyncReset={isFieldOverridden("inputTokens") ? () => resetField("inputTokens") : undefined}
               />
               <NumberInput
                 label="Output tokens"
                 value={input.outputTokens}
-                onChange={(v) => update("outputTokens", Math.max(0, v))}
+                onChange={(v) => { update("outputTokens", Math.max(0, v)); markOverride("outputTokens"); }}
                 min={0}
                 step={100}
                 suffix="tokens"
+                syncSource={getSyncSource("outputTokens") ?? undefined}
+                onSyncReset={isFieldOverridden("outputTokens") ? () => resetField("outputTokens") : undefined}
               />
             </div>
           </Card>
@@ -262,10 +233,13 @@ export default function EconomicsBriefPage() {
                 value={input.modelId}
                 onChange={(v) => {
                   update("modelId", v);
+                  markOverride("modelId");
                   setCostManualOverride(false);
                   setMonthlyCostManualOverride(false);
                 }}
                 options={MODEL_OPTIONS}
+                syncSource={getSyncSource("modelId") ?? undefined}
+                onSyncReset={isFieldOverridden("modelId") ? () => resetField("modelId") : undefined}
               />
               {model && (
                 <div className="text-[10px] text-text-muted font-mono">
@@ -371,11 +345,13 @@ export default function EconomicsBriefPage() {
               <NumberInput
                 label="Human cost per unit"
                 value={input.humanCostPerUnit}
-                onChange={(v) => update("humanCostPerUnit", Math.max(0, v))}
+                onChange={(v) => { update("humanCostPerUnit", Math.max(0, v)); markOverride("humanCostPerUnit"); }}
                 min={0}
                 step={0.5}
                 prefix="$"
                 hint="Cost of human handling one request"
+                syncSource={getSyncSource("humanCostPerUnit") ?? undefined}
+                onSyncReset={isFieldOverridden("humanCostPerUnit") ? () => resetField("humanCostPerUnit") : undefined}
               />
             </div>
           </Card>

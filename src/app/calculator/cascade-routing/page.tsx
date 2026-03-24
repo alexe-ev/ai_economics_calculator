@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo } from "react";
+import { useFieldSync } from "@/lib/hooks/use-field-sync";
 import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   BarChart,
@@ -68,29 +69,16 @@ export default function CascadeRoutingPage() {
     });
   }, [output, setCascadeRouting]);
 
-  const pullFromTokenCost = useCallback(() => {
-    if (!tokenCost) return;
-    const newTiers = input.tiers.map((tier) => ({
-      ...tier,
-      costPerRequest: estimateCostPerRequest(
-        tier.modelId,
-        tokenCost.inputTokens,
-        tokenCost.outputTokens
-      ),
-    }));
-    setInput((prev) => ({
-      ...prev,
-      totalRequestsPerMonth: tokenCost.costPerRequest > 0
-        ? Math.round(tokenCost.monthlyCost / tokenCost.costPerRequest)
-        : prev.totalRequestsPerMonth,
-      classifierCostPerRequest: estimateCostPerRequest(
-        prev.classifierModelId,
-        tokenCost.inputTokens * 0.1,
-        tokenCost.outputTokens * 0.05
-      ),
-      tiers: newTiers,
-    }));
-  }, [tokenCost, input.tiers]);
+  const syncConfig = useMemo(() => [
+    { field: "totalRequestsPerMonth", upstream: () => tokenCost?.requestsPerMonth, source: "Token Cost" },
+  ], [tokenCost]);
+
+  const { markOverride, resetField, getSyncSource, isFieldOverridden } = useFieldSync(
+    input,
+    setInput,
+    syncConfig,
+    STORAGE_KEYS.cascadeOverrides,
+  );
 
   function updateTier(index: number, patch: Partial<CascadeTier>) {
     setInput((prev) => {
@@ -288,13 +276,6 @@ export default function CascadeRoutingPage() {
             Module 2.4: Route requests to tiered models by complexity. Estimate blended cost, quality, and savings vs single-model.
           </p>
         </div>
-        <button
-          onClick={pullFromTokenCost}
-          disabled={!tokenCost}
-          className="px-3 py-1.5 text-xs font-medium rounded border border-border bg-bg-card text-text-primary hover:bg-bg-hover hover:border-border-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          Pull from Token Cost
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -309,14 +290,17 @@ export default function CascadeRoutingPage() {
               <NumberInput
                 label="Total requests / month"
                 value={input.totalRequestsPerMonth}
-                onChange={(v) =>
+                onChange={(v) => {
                   setInput((prev) => ({
                     ...prev,
                     totalRequestsPerMonth: Math.max(0, v),
-                  }))
-                }
+                  }));
+                  markOverride("totalRequestsPerMonth");
+                }}
                 min={0}
                 step={10000}
+                syncSource={getSyncSource("totalRequestsPerMonth") ?? undefined}
+                onSyncReset={isFieldOverridden("totalRequestsPerMonth") ? () => resetField("totalRequestsPerMonth") : undefined}
               />
               <SelectInput
                 label="Classifier model"
