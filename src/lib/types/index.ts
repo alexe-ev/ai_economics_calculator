@@ -281,5 +281,6 @@ export interface SharedCalculatorState {
     cogsPerUser: number;
     fleetGrossMargin: number;
     segments: UserSegment[];
+    humanCostPerOutcome: number;
   };
 }

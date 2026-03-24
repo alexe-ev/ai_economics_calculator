@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import { useFieldSync } from "@/lib/hooks/use-field-sync";
 import { usePersistedState } from "@/lib/hooks/use-persisted-state";
 import {
   PieChart,
@@ -67,7 +68,19 @@ const DEFAULT_INPUT: UnitEconomicsInput = {
 export default function UnitEconomicsPage() {
   const [input, setInput] = usePersistedState<UnitEconomicsInput>(STORAGE_KEYS.unitEconomics, DEFAULT_INPUT);
   const setUnitEconomics = useCalculatorStore((s) => s.setUnitEconomics);
-  const agentCost = useCalculatorStore((s) => s.agentCost);
+  const tokenCost = useCalculatorStore((s) => s.tokenCost);
+
+  const syncConfig = useMemo(() => [
+    { field: "inferenceCostMonthly", upstream: () => tokenCost?.monthlyCost, source: "Token Cost" },
+    { field: "totalRequestsPerMonth", upstream: () => tokenCost?.requestsPerMonth, source: "Token Cost" },
+  ], [tokenCost]);
+
+  const { markOverride, resetField, getSyncSource, isFieldOverridden } = useFieldSync(
+    input,
+    setInput,
+    syncConfig,
+    STORAGE_KEYS.unitEconomicsOverrides,
+  );
 
   const output = useMemo(() => calculateUnitEconomics(input), [input]);
 
@@ -78,19 +91,9 @@ export default function UnitEconomicsPage() {
       cogsPerUser: output.cogsPerUser,
       fleetGrossMargin: output.fleetGrossMargin,
       segments: input.segments,
+      humanCostPerOutcome: input.humanCostPerOutcome,
     });
-  }, [output, input.segments, setUnitEconomics]);
-
-  function pullFromAgentCost() {
-    if (!agentCost) return;
-    // Use costPerIntent as a proxy for inference cost base
-    // Estimate monthly inference = costPerIntent * totalRequests
-    const estimatedInference = agentCost.costPerIntent * input.totalRequestsPerMonth;
-    setInput((prev) => ({
-      ...prev,
-      inferenceCostMonthly: Math.round(estimatedInference * 100) / 100,
-    }));
-  }
+  }, [output, input.segments, input.humanCostPerOutcome, setUnitEconomics]);
 
   function updateSegment(index: number, patch: Partial<UserSegment>) {
     setInput((prev) => ({
@@ -203,18 +206,6 @@ export default function UnitEconomicsPage() {
             Module 2.9: Fleet COGS, gross margin analysis, per-segment breakdown, and outcome cost comparison.
           </p>
         </div>
-        <button
-          onClick={pullFromAgentCost}
-          disabled={!agentCost}
-          className={cn(
-            "px-3 py-1.5 text-xs rounded border transition-colors",
-            agentCost
-              ? "border-accent text-accent hover:bg-accent/10"
-              : "border-border text-text-muted cursor-not-allowed"
-          )}
-        >
-          Pull from Agent Cost
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -265,13 +256,16 @@ export default function UnitEconomicsPage() {
               <NumberInput
                 label="Inference cost"
                 value={input.inferenceCostMonthly}
-                onChange={(v) =>
-                  setInput((prev) => ({ ...prev, inferenceCostMonthly: Math.max(0, v) }))
-                }
+                onChange={(v) => {
+                  setInput((prev) => ({ ...prev, inferenceCostMonthly: Math.max(0, v) }));
+                  markOverride("inferenceCostMonthly");
+                }}
                 min={0}
                 step={100}
                 prefix="$"
                 suffix="/mo"
+                syncSource={getSyncSource("inferenceCostMonthly") ?? undefined}
+                onSyncReset={isFieldOverridden("inferenceCostMonthly") ? () => resetField("inferenceCostMonthly") : undefined}
               />
               <NumberInput
                 label="Embedding cost"
@@ -445,14 +439,17 @@ export default function UnitEconomicsPage() {
               <NumberInput
                 label="Total requests/mo"
                 value={input.totalRequestsPerMonth}
-                onChange={(v) =>
+                onChange={(v) => {
                   setInput((prev) => ({
                     ...prev,
                     totalRequestsPerMonth: Math.max(0, Math.round(v)),
-                  }))
-                }
+                  }));
+                  markOverride("totalRequestsPerMonth");
+                }}
                 min={0}
                 step={1000}
+                syncSource={getSyncSource("totalRequestsPerMonth") ?? undefined}
+                onSyncReset={isFieldOverridden("totalRequestsPerMonth") ? () => resetField("totalRequestsPerMonth") : undefined}
               />
             </div>
           </Card>
