@@ -15,7 +15,7 @@ import {
   Legend,
 } from "recharts";
 import { TokenCostInput, TokenCostOutput, ModelComparisonRow } from "@/lib/types";
-import { MODEL_PRICES, LANGUAGE_MULTIPLIERS, getModel } from "@/lib/data/models";
+import { MODEL_PRICES, LANGUAGE_MULTIPLIERS, getModel, MODEL_OPTIONS_GROUPED } from "@/lib/data/models";
 import { calculateTokenCost } from "@/lib/calculations/token-cost";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -28,10 +28,6 @@ import { StatCard } from "@/components/outputs/stat-card";
 import { DataTable } from "@/components/outputs/data-table";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-const MODEL_OPTIONS = MODEL_PRICES.map((m) => ({
-  value: m.id,
-  label: `${m.name} (${m.provider})`,
-}));
 
 const LANGUAGE_OPTIONS = [
   { value: "en", label: "English (1.0x)" },
@@ -159,7 +155,7 @@ export default function TokenCostPage() {
                 label="Model"
                 value={input.modelId}
                 onChange={(v) => update("modelId", v)}
-                options={MODEL_OPTIONS}
+                options={MODEL_OPTIONS_GROUPED}
               />
               {model && (
                 <div className="text-[10px] text-text-muted font-mono">

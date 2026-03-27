@@ -14,7 +14,7 @@ import {
   Cell,
 } from "recharts";
 import { CascadeRoutingInput, CascadeTier } from "@/lib/types";
-import { MODEL_PRICES, getModel } from "@/lib/data/models";
+import { MODEL_PRICES, getModel, MODEL_OPTIONS_GROUPED } from "@/lib/data/models";
 import { calculateCascadeRouting } from "@/lib/calculations/cascade-routing";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -26,13 +26,8 @@ import { StatCard } from "@/components/outputs/stat-card";
 import { DataTable } from "@/components/outputs/data-table";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-const MODEL_OPTIONS = MODEL_PRICES.map((m) => ({
-  value: m.id,
-  label: `${m.name} (${m.provider})`,
-}));
 
-const TIER_COLORS = ["#22C55E", "#4F7FFF", "#F59E0B", "#EF4444"];
-const TIER_LABELS = ["Tier 1 (Light)", "Tier 2 (Mid)", "Tier 3 (Heavy)", "Tier 4"];
+const TIER_COLORS = ["#22C55E", "#4F7FFF", "#F59E0B", "#EF4444", "#A855F7", "#EC4899", "#14B8A6", "#F97316"];
 
 function estimateCostPerRequest(modelId: string, inputTokens: number, outputTokens: number): number {
   const model = getModel(modelId);
@@ -126,7 +121,6 @@ export default function CascadeRoutingPage() {
   }
 
   function addTier() {
-    if (input.tiers.length >= 4) return;
     setInput((prev) => {
       // Take 10% from the biggest tier for the new one
       const tiers = [...prev.tiers];
@@ -181,7 +175,7 @@ export default function CascadeRoutingPage() {
     {
       name: "All Premium",
       classifier: 0,
-      tier0: output.allExpensiveCost,
+      allPremium: output.allExpensiveCost,
     },
   ];
 
@@ -190,7 +184,7 @@ export default function CascadeRoutingPage() {
     const tier = input.tiers[i];
     const model = getModel(tier.modelId);
     return {
-      tier: TIER_LABELS[i] ?? `Tier ${i + 1}`,
+      tier: `Tier ${i + 1}`,
       model: model?.name ?? tier.modelId,
       traffic: tier.trafficPct,
       volume: tc.volume,
@@ -317,7 +311,7 @@ export default function CascadeRoutingPage() {
                     classifierCostPerRequest: cost,
                   }));
                 }}
-                options={MODEL_OPTIONS}
+                options={MODEL_OPTIONS_GROUPED}
               />
               <NumberInput
                 label="Classifier cost / request"
@@ -346,7 +340,7 @@ export default function CascadeRoutingPage() {
                       className="inline-block w-3 h-3 rounded-sm"
                       style={{ backgroundColor: TIER_COLORS[i] }}
                     />
-                    <CardTitle>{TIER_LABELS[i] ?? `Tier ${i + 1}`}</CardTitle>
+                    <CardTitle>{`Tier ${i + 1}`}</CardTitle>
                   </div>
                   {input.tiers.length > 2 && (
                     <button
@@ -363,7 +357,7 @@ export default function CascadeRoutingPage() {
                   label="Model"
                   value={tier.modelId}
                   onChange={(v) => handleModelChange(i, v)}
-                  options={MODEL_OPTIONS}
+                  options={MODEL_OPTIONS_GROUPED}
                 />
                 <SliderInput
                   label="Traffic share"
@@ -395,14 +389,12 @@ export default function CascadeRoutingPage() {
             </Card>
           ))}
 
-          {input.tiers.length < 4 && (
-            <button
+          <button
               onClick={addTier}
               className="w-full py-2 text-xs font-medium rounded border border-dashed border-border text-text-muted hover:text-text-primary hover:border-border-hover transition-colors"
             >
               + Add Tier
             </button>
-          )}
 
           {/* Traffic sum warning */}
           {(() => {
@@ -529,7 +521,9 @@ export default function CascadeRoutingPage() {
                         const label =
                           name === "classifier"
                             ? "Classifier"
-                            : TIER_LABELS[Number(String(name).replace("tier", ""))] ?? name;
+                            : name === "allPremium"
+                              ? "All Premium"
+                              : `Tier ${Number(String(name).replace("tier", "")) + 1}`;
                         return [formatCurrency(Number(value), 2), String(label)];
                       }}
                       cursor={{ fill: "rgba(255,255,255,0.05)" }}
@@ -538,8 +532,9 @@ export default function CascadeRoutingPage() {
                       wrapperStyle={{ fontSize: "11px" }}
                       formatter={(value: string) => {
                         if (value === "classifier") return "Classifier";
+                        if (value === "allPremium") return "All Premium";
                         const idx = Number(value.replace("tier", ""));
-                        return TIER_LABELS[idx] ?? value;
+                        return `Tier ${idx + 1}`;
                       }}
                     />
                     <Bar
@@ -561,6 +556,12 @@ export default function CascadeRoutingPage() {
                         }
                       />
                     ))}
+                    <Bar
+                      dataKey="allPremium"
+                      stackId="a"
+                      fill="#666666"
+                      radius={[3, 3, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

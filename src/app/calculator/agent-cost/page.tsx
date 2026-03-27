@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AgentCostInput, AgentStep, AgentStepCost } from "@/lib/types";
-import { MODEL_PRICES } from "@/lib/data/models";
+import { MODEL_PRICES, MODEL_OPTIONS_GROUPED } from "@/lib/data/models";
 import { calculateAgentCost } from "@/lib/calculations/agent-cost";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -26,10 +26,6 @@ import { StatCard } from "@/components/outputs/stat-card";
 import { DataTable } from "@/components/outputs/data-table";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-const MODEL_OPTIONS = MODEL_PRICES.map((m) => ({
-  value: m.id,
-  label: `${m.name} (${m.provider})`,
-}));
 
 const DEFAULT_STEPS: AgentStep[] = [
   { newInputTokens: 1000, outputTokens: 500, modelId: "claude-sonnet", toolUse: true, toolResultTokens: 300 },
@@ -208,7 +204,7 @@ export default function AgentCostPage() {
                     label="Model"
                     value={step.modelId}
                     onChange={(v) => updateStep(i, { modelId: v })}
-                    options={MODEL_OPTIONS}
+                    options={MODEL_OPTIONS_GROUPED}
                   />
                   <NumberInput
                     label="New input tokens"
@@ -375,7 +371,7 @@ export default function AgentCostPage() {
                         },
                       }))
                     }
-                    options={MODEL_OPTIONS}
+                    options={MODEL_OPTIONS_GROUPED}
                   />
                   <NumberInput
                     label="Orchestrator cost per call"

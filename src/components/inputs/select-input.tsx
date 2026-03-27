@@ -2,11 +2,16 @@
 
 import { cn } from "@/lib/utils";
 
+interface OptionGroup {
+  group: string;
+  options: { value: string; label: string }[];
+}
+
 interface SelectInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string }[] | OptionGroup[];
   className?: string;
   syncSource?: string;
   onSyncReset?: () => void;
@@ -29,11 +34,21 @@ export function SelectInput({
         onChange={(e) => onChange(e.target.value)}
         className="w-full bg-bg-primary border border-border rounded px-2.5 py-1.5 text-sm text-text-primary focus:border-accent focus:outline-none"
       >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
+        {options.length > 0 && "group" in options[0]
+          ? (options as OptionGroup[]).map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))
+          : (options as { value: string; label: string }[]).map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
       </select>
       {syncSource && (
         <p className="text-[10px] text-accent flex items-center gap-1">

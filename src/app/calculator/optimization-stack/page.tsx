@@ -10,7 +10,6 @@ import {
   Tooltip,
   Cell,
   ResponsiveContainer,
-  ReferenceLine,
 } from "recharts";
 import { useCalculatorStore } from "@/lib/store/calculator-store";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -83,49 +82,20 @@ export default function OptimizationStackPage() {
     setInput((prev) => ({ ...prev, ...patch }));
   }
 
-  // Waterfall chart data
-  const waterfallData = useMemo(() => {
-    const baselineCost =
-      (input.inputTokens / 1_000_000) * input.inputPricePerMTok +
-      (input.outputTokens / 1_000_000) * input.outputPricePerMTok;
-    const baseline = baselineCost * input.requestsPerMonth;
-
-    const items: { name: string; value: number; savings: number; isBaseline?: boolean; isFinal?: boolean }[] = [
-      { name: "Baseline", value: baseline, savings: 0, isBaseline: true },
+  // Cost cascade data: cost after each stage
+  const cascadeData = useMemo(() => {
+    const items: { name: string; cost: number; isBaseline?: boolean }[] = [
+      { name: "Baseline", cost: output.baselineMonthlyCost, isBaseline: true },
     ];
 
-    let prevCost = baseline;
     for (const layer of output.layers) {
-      const diff = prevCost - layer.monthlyCost;
-      if (diff > 0.001) {
-        items.push({ name: layer.name, value: -diff, savings: diff });
+      if (layer.savingsPct > 0.0001) {
+        items.push({ name: layer.name, cost: layer.monthlyCost });
       }
-      prevCost = layer.monthlyCost;
     }
 
-    items.push({ name: "Final", value: output.finalMonthlyCost, savings: 0, isFinal: true });
-
     return items;
-  }, [input, output]);
-
-  // Running total for waterfall positioning
-  const waterfallBars = useMemo(() => {
-    const baselineVal = waterfallData[0].value;
-    let runningTotal = baselineVal;
-
-    return waterfallData.map((item) => {
-      if (item.isBaseline) {
-        return { ...item, base: 0, visible: item.value };
-      }
-      if (item.isFinal) {
-        return { ...item, base: 0, visible: item.value };
-      }
-      // Savings bar: starts where previous ended, goes down
-      const top = runningTotal;
-      runningTotal = runningTotal + item.value; // item.value is negative
-      return { ...item, base: runningTotal, visible: Math.abs(item.value) };
-    });
-  }, [waterfallData]);
+  }, [output]);
 
   const layerTableData = output.layers.map((layer) => ({
     ...layer,
@@ -389,29 +359,33 @@ export default function OptimizationStackPage() {
             </div>
           </Card>
 
-          {/* Waterfall chart */}
+          {/* Cost cascade chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Cost Waterfall</CardTitle>
-              <CardDescription>Monthly cost reduction through each optimization layer</CardDescription>
+              <CardTitle>Cost Cascade</CardTitle>
+              <CardDescription>Monthly cost after each optimization layer</CardDescription>
             </CardHeader>
-            <div className="h-72">
+            <div style={{ height: Math.max(160, cascadeData.length * 48 + 20) }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={waterfallBars}
-                  margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+                  data={cascadeData}
+                  layout="vertical"
+                  margin={{ top: 5, right: 40, left: 5, bottom: 5 }}
                 >
                   <XAxis
-                    dataKey="name"
+                    type="number"
                     tick={{ fill: "#999999", fontSize: 11 }}
                     axisLine={{ stroke: "#2A2A2A" }}
                     tickLine={false}
+                    tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)}`}
                   />
                   <YAxis
+                    type="category"
+                    dataKey="name"
                     tick={{ fill: "#999999", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v.toFixed(0)}`}
+                    width={110}
                   />
                   <Tooltip
                     contentStyle={{
@@ -422,27 +396,15 @@ export default function OptimizationStackPage() {
                       color: "#E5E5E5",
                     }}
                     labelStyle={{ color: "#E5E5E5" }}
-                    formatter={(value, name) => {
-                      if (name === "base") return [null, null];
-                      return [formatCurrency(Number(value), 2), "Amount"];
-                    }}
+                    formatter={(value) => [formatCurrency(Number(value), 2), "Monthly cost"]}
                     itemStyle={{ color: "#E5E5E5" }}
                     cursor={{ fill: "rgba(255,255,255,0.05)" }}
                   />
-                  <ReferenceLine y={0} stroke="#2A2A2A" />
-                  {/* Invisible base bar for stacking */}
-                  <Bar dataKey="base" stackId="waterfall" fill="transparent" />
-                  {/* Visible bar */}
-                  <Bar dataKey="visible" stackId="waterfall" radius={[3, 3, 0, 0]}>
-                    {waterfallBars.map((entry, index) => (
+                  <Bar dataKey="cost" radius={[0, 3, 3, 0]}>
+                    {cascadeData.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={
-                          entry.isBaseline || entry.isFinal
-                            ? "#4F7FFF"
-                            : "#22C55E"
-                        }
-                        fillOpacity={entry.isFinal ? 0.7 : 1}
+                        fill={entry.isBaseline ? "#666666" : "#22C55E"}
                       />
                     ))}
                   </Bar>

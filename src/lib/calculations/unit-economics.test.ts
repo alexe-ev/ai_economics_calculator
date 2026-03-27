@@ -11,13 +11,10 @@ const baseInput: UnitEconomicsInput = {
   fineTuningMonthly: 0,
   errorOverheadPct: 0.1,
   safetyOverheadPct: 0.05,
-  totalRequestsPerMonth: 50000,
-  humanCostPerOutcome: 15,
-  aiResolutionRate: 0.75,
   segments: [
-    { name: "Light", userPct: 0.6, avgRequestsPerMonth: 20, avgCostPerRequest: 0.05, revenuePerUser: 19 },
-    { name: "Regular", userPct: 0.3, avgRequestsPerMonth: 100, avgCostPerRequest: 0.08, revenuePerUser: 49 },
-    { name: "Power", userPct: 0.1, avgRequestsPerMonth: 500, avgCostPerRequest: 0.12, revenuePerUser: 99 },
+    { name: "Segment 1", userPct: 0.6, avgRequestsPerMonth: 20, avgCostPerRequest: 0.05, revenuePerUser: 19 },
+    { name: "Segment 2", userPct: 0.3, avgRequestsPerMonth: 100, avgCostPerRequest: 0.08, revenuePerUser: 49 },
+    { name: "Segment 3", userPct: 0.1, avgRequestsPerMonth: 500, avgCostPerRequest: 0.12, revenuePerUser: 99 },
   ],
 };
 
@@ -188,19 +185,19 @@ describe("calculateUnitEconomics", () => {
       const input: UnitEconomicsInput = {
         ...baseInput,
         segments: baseInput.segments.map((seg) =>
-          seg.name === "Power" ? { ...seg, revenuePerUser: 10 } : seg
+          seg.name === "Segment 3" ? { ...seg, revenuePerUser: 10 } : seg
         ),
       };
       const r = calculateUnitEconomics(input);
-      const power = r.segments.find((s) => s.name === "Power")!;
+      const power = r.segments.find((s) => s.name === "Segment 3")!;
       // Power cogsPerUser=69.92 > revenuePerUser=10 → negative
       expect(power.isNegativeMargin).toBe(true);
     });
 
     it("does not flag segments where COGS is below revenue", () => {
-      const light = result.segments.find((s) => s.name === "Light")!;
-      const regular = result.segments.find((s) => s.name === "Regular")!;
-      const power = result.segments.find((s) => s.name === "Power")!;
+      const light = result.segments.find((s) => s.name === "Segment 1")!;
+      const regular = result.segments.find((s) => s.name === "Segment 2")!;
+      const power = result.segments.find((s) => s.name === "Segment 3")!;
       expect(light.isNegativeMargin).toBe(false);
       expect(regular.isNegativeMargin).toBe(false);
       expect(power.isNegativeMargin).toBe(false);
@@ -210,11 +207,11 @@ describe("calculateUnitEconomics", () => {
       const input: UnitEconomicsInput = {
         ...baseInput,
         segments: baseInput.segments.map((seg) =>
-          seg.name === "Light" ? { ...seg, revenuePerUser: 0 } : seg
+          seg.name === "Segment 1" ? { ...seg, revenuePerUser: 0 } : seg
         ),
       };
       const r = calculateUnitEconomics(input);
-      const light = r.segments.find((s) => s.name === "Light")!;
+      const light = r.segments.find((s) => s.name === "Segment 1")!;
       expect(light.isNegativeMargin).toBe(true);
     });
   });
@@ -279,28 +276,6 @@ describe("calculateUnitEconomics", () => {
     });
   });
 
-  describe("Cost per resolved outcome", () => {
-    it("equals fleetCogs / (volume * resolutionRate)", () => {
-      // 6900 / (50000 * 0.75) = 6900 / 37500 = 0.184
-      expect(result.costPerResolved).toBeCloseTo(0.184, 3);
-    });
-  });
-
-  describe("Blended cost per problem", () => {
-    it("equals (resolutionRate * avgAiCost) + ((1 - resolutionRate) * humanCost)", () => {
-      // avgAiCostPerRequest = 6900 / 50000 = 0.138
-      // blended = (0.75 * 0.138) + (0.25 * 15) = 0.1035 + 3.75 = 3.8535
-      expect(result.blendedCostPerProblem).toBeCloseTo(3.8535, 3);
-    });
-  });
-
-  describe("Breakeven resolution rate", () => {
-    it("equals fleetCogs / (volume * humanCost)", () => {
-      // 6900 / (50000 * 15) = 6900 / 750000 = 0.0092
-      expect(result.breakevenResolutionRate).toBeCloseTo(0.0092, 4);
-    });
-  });
-
   describe("Edge cases", () => {
     it("handles 0 users", () => {
       const r = calculateUnitEconomics({ ...baseInput, numUsers: 0 });
@@ -309,13 +284,6 @@ describe("calculateUnitEconomics", () => {
       expect(r.fleetCogs).toBe(6900);
       // Segments should have 0 users
       r.segments.forEach((s) => expect(s.users).toBe(0));
-    });
-
-    it("handles 0 requests", () => {
-      const r = calculateUnitEconomics({ ...baseInput, totalRequestsPerMonth: 0 });
-      expect(r.costPerResolved).toBe(0);
-      expect(r.blendedCostPerProblem).toBeCloseTo((1 - 0.75) * 15, 5);
-      expect(r.breakevenResolutionRate).toBe(0);
     });
   });
 });
