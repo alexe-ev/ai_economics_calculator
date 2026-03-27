@@ -83,37 +83,6 @@ Upstream changes propagate downstream automatically. Any synced field can be ove
 
 -----
 
-## Worked Example: B2B Support Copilot
-
-A SaaS company handles 80,000 support tickets/month. They're adding an AI copilot to draft responses.
-
-**Baseline (Token Cost):**
-- Model: Claude Sonnet 4. Input: 2,000 tokens, output: 500 tokens
-- Cost per request: $0.0115
-- Monthly: $920
-
-**With Optimization Stack:**
-- Prompt caching (system prompt, 85% hit rate): -$280/mo
-- Semantic cache (40% FAQ traffic, 70% hit rate): -$258/mo
-- Optimized monthly cost: $382. Savings: **58%**
-
-**With Cascade Routing:**
-- Tier 1 (Haiku, simple FAQs, 50% traffic): $0.002/req
-- Tier 2 (Sonnet, standard tickets, 35%): $0.012/req
-- Tier 3 (Opus, escalations, 15%): $0.09/req
-- Blended cost: $0.018/req, monthly: $1,440
-- vs all-Opus: $7,200/mo. Savings: **80%**
-
-**Unit Economics:**
-- COGS per user (2,000 users, 40 tickets/user): $0.46/mo
-- Revenue per user: $49/mo
-- AI gross margin: **89%**
-- Human cost per ticket: $4.20. AI cost per ticket: $0.012. Ratio: **350:1**
-
-One feature, four different cost numbers depending on architecture. That's what the calculator shows.
-
------
-
 ## Tech Stack
 
 | Tool | Purpose |
