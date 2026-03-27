@@ -95,3 +95,16 @@ export const LANGUAGE_MULTIPLIERS: Record<string, number> = {
 export function getModel(id: string): ModelPricing | undefined {
   return MODEL_PRICES.find((m) => m.id === id);
 }
+
+// Model options grouped by provider, sorted alphabetically
+export const MODEL_OPTIONS_GROUPED = (() => {
+  const byProvider = new Map<string, { value: string; label: string }[]>();
+  for (const m of MODEL_PRICES) {
+    const group = byProvider.get(m.provider) ?? [];
+    group.push({ value: m.id, label: m.name });
+    byProvider.set(m.provider, group);
+  }
+  return Array.from(byProvider.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([provider, options]) => ({ group: provider, options }));
+})();

@@ -189,10 +189,6 @@ export interface UnitEconomicsInput {
   safetyOverheadPct: number; // 0-1
   // User distribution
   segments: UserSegment[];
-  // Human alternative
-  humanCostPerOutcome: number;
-  aiResolutionRate: number; // 0-1
-  totalRequestsPerMonth: number;
 }
 
 export interface UserSegment {
@@ -213,9 +209,6 @@ export interface UnitEconomicsOutput {
   mrr: number;
   grossProfitPerUser: number;
   segments: SegmentAnalysis[];
-  costPerResolved: number;
-  blendedCostPerProblem: number;
-  breakevenResolutionRate: number;
 }
 
 export interface SegmentAnalysis {
@@ -226,27 +219,6 @@ export interface SegmentAnalysis {
   revenuePerUser: number;
   margin: number;
   isNegativeMargin: boolean;
-}
-
-// Module 2.13: Economics Brief
-export interface EconomicsBriefInput {
-  taskDescription: string;
-  inputTokens: number;
-  outputTokens: number;
-  requestsPerDay: number;
-  requestsPerMonth: number;
-  modelId: string;
-  modelReason: string;
-  costPerRequest: number;
-  monthlyCost: number;
-  humanCostPerUnit: number;
-}
-
-export interface EconomicsBriefOutput {
-  brief: string;
-  breakEvenVolume: number;
-  aiToHumanRatio: number;
-  unknownFieldsCount: number;
 }
 
 // Shared store types
@@ -282,6 +254,5 @@ export interface SharedCalculatorState {
     cogsPerUser: number;
     fleetGrossMargin: number;
     segments: UserSegment[];
-    humanCostPerOutcome: number;
   };
 }

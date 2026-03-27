@@ -8,7 +8,6 @@ import {
   GitBranch,
   Bot,
   PieChart,
-  FileText,
   ChevronRight,
 } from "lucide-react";
 import { DEMO_PRESET, loadPreset, clearPreset } from "@/lib/data/presets";
@@ -44,12 +43,6 @@ const NAV_GROUPS = [
       { href: "/calculator/unit-economics", label: "Unit Economics", icon: PieChart, module: "2.9" },
     ],
   },
-  {
-    label: "PM Tools",
-    items: [
-      { href: "/calculator/economics-brief", label: "Economics Brief", icon: FileText, module: "2.13" },
-    ],
-  },
 ];
 
 // Data flow connections between modules
@@ -58,7 +51,6 @@ const DATA_FLOWS: Record<string, string[]> = {
   "/calculator/optimization-stack": ["/calculator/cascade-routing", "/calculator/unit-economics"],
   "/calculator/cascade-routing": ["/calculator/agent-cost"],
   "/calculator/agent-cost": ["/calculator/unit-economics"],
-  "/calculator/unit-economics": ["/calculator/economics-brief"],
 };
 
 export default function CalculatorLayout({

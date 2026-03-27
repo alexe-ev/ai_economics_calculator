@@ -4,7 +4,6 @@ import type {
   CascadeRoutingInput,
   AgentCostInput,
   UnitEconomicsInput,
-  EconomicsBriefInput,
 } from "@/lib/types";
 import { STORAGE_KEYS } from "@/lib/constants";
 
@@ -85,26 +84,10 @@ const unitEconomics: UnitEconomicsInput = {
   errorOverheadPct: 0.15,
   safetyOverheadPct: 0.10,
   segments: [
-    { name: "Light", userPct: 0.6, avgRequestsPerMonth: 300, avgCostPerRequest: 0.015, revenuePerUser: 0 },
-    { name: "Regular", userPct: 0.3, avgRequestsPerMonth: 500, avgCostPerRequest: 0.055, revenuePerUser: 29 },
-    { name: "Power", userPct: 0.1, avgRequestsPerMonth: 1200, avgCostPerRequest: 0.08, revenuePerUser: 99 },
+    { name: "Segment 1", userPct: 0.6, avgRequestsPerMonth: 300, avgCostPerRequest: 0.015, revenuePerUser: 0 },
+    { name: "Segment 2", userPct: 0.3, avgRequestsPerMonth: 500, avgCostPerRequest: 0.055, revenuePerUser: 29 },
+    { name: "Segment 3", userPct: 0.1, avgRequestsPerMonth: 1200, avgCostPerRequest: 0.08, revenuePerUser: 99 },
   ],
-  humanCostPerOutcome: 10,
-  aiResolutionRate: 0.6,
-  totalRequestsPerMonth: 80000,
-};
-
-const economicsBrief: EconomicsBriefInput = {
-  taskDescription: "B2B SaaS support copilot: automated customer ticket classification, resolution, and escalation",
-  inputTokens: 3000,
-  outputTokens: 500,
-  requestsPerDay: 2667,
-  requestsPerMonth: 80000,
-  modelId: "claude-sonnet",
-  modelReason: "Best quality/cost balance for support tasks requiring nuanced understanding",
-  costPerRequest: 0.047,
-  monthlyCost: 3768,
-  humanCostPerUnit: 10,
 };
 
 export const DEMO_PRESET = {
@@ -113,7 +96,6 @@ export const DEMO_PRESET = {
   cascadeRouting,
   agentCost,
   unitEconomics,
-  economicsBrief,
 };
 
 export function loadPreset(preset: typeof DEMO_PRESET): void {
@@ -123,12 +105,10 @@ export function loadPreset(preset: typeof DEMO_PRESET): void {
     localStorage.setItem(STORAGE_KEYS.cascadeRouting, JSON.stringify(preset.cascadeRouting));
     localStorage.setItem(STORAGE_KEYS.agentCost, JSON.stringify(preset.agentCost));
     localStorage.setItem(STORAGE_KEYS.unitEconomics, JSON.stringify(preset.unitEconomics));
-    localStorage.setItem(STORAGE_KEYS.economicsBrief, JSON.stringify(preset.economicsBrief));
     localStorage.removeItem(STORAGE_KEYS.zustand);
     localStorage.removeItem(STORAGE_KEYS.optimizationOverrides);
     localStorage.removeItem(STORAGE_KEYS.cascadeOverrides);
     localStorage.removeItem(STORAGE_KEYS.unitEconomicsOverrides);
-    localStorage.removeItem(STORAGE_KEYS.economicsBriefOverrides);
   } catch {
     // localStorage full or unavailable
   }

@@ -18,9 +18,6 @@ export function calculateUnitEconomics(
     errorOverheadPct,
     safetyOverheadPct,
     segments,
-    humanCostPerOutcome,
-    aiResolutionRate,
-    totalRequestsPerMonth,
   } = input;
 
   // MRR = sum of (revenuePerUser * users) for each segment
@@ -99,29 +96,6 @@ export function calculateUnitEconomics(
     };
   });
 
-  // Cost per successful outcome
-  // total_cogs / (volume * resolution_rate)
-  const effectiveResolutionRate = Math.max(aiResolutionRate, 0.01);
-  const costPerResolved =
-    totalRequestsPerMonth > 0
-      ? fleetCogs / (totalRequestsPerMonth * effectiveResolutionRate)
-      : 0;
-
-  // Blended cost per problem solved
-  // (resolution_rate * avg_ai_cost) + ((1 - resolution_rate) * human_cost)
-  const avgAiCostPerRequest =
-    totalRequestsPerMonth > 0 ? fleetCogs / totalRequestsPerMonth : 0;
-  const blendedCostPerProblem =
-    aiResolutionRate * avgAiCostPerRequest +
-    (1 - aiResolutionRate) * humanCostPerOutcome;
-
-  // Breakeven resolution rate
-  // breakeven_rate = total_ai_overhead / (volume * human_cost)
-  const breakevenResolutionRate =
-    totalRequestsPerMonth * humanCostPerOutcome > 0
-      ? fleetCogs / (totalRequestsPerMonth * humanCostPerOutcome)
-      : 0;
-
   return {
     fleetCogs,
     cogsBreakdown,
@@ -132,8 +106,5 @@ export function calculateUnitEconomics(
     mrr,
     grossProfitPerUser,
     segments: segmentAnalysis,
-    costPerResolved,
-    blendedCostPerProblem,
-    breakevenResolutionRate,
   };
 }
