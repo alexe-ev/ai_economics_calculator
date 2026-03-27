@@ -6,7 +6,7 @@
 
 **Model AI costs before you ship, not after the invoice arrives.**
 
-An interactive calculator that turns token prices, optimization layers, and routing strategies into monthly costs, gross margins, and launch-ready economics briefs. So PMs can make cost decisions during planning, not after the first AWS bill.
+An interactive calculator that turns token prices, optimization layers, and routing strategies into monthly costs and gross margins. So PMs can make cost decisions during planning, not after the first AWS bill.
 
 -----
 
@@ -51,11 +51,11 @@ Baseline cost estimation. Pick a model, set token counts, apply modifiers (Batch
 
 ### Optimization Stack Simulator
 
-Four compounding optimization layers: output limits, prompt caching, semantic cache, context management. Each layer reduces cost on top of the previous one. Waterfall chart shows where the savings come from.
+Four compounding optimization layers: output limits, prompt caching, semantic cache, context management. Each layer reduces cost on top of the previous one. Horizontal cascade chart shows the cost dropping through each layer.
 
 ### Cascade Routing Calculator
 
-Split traffic across 2-4 model tiers by complexity. Configure a classifier model, set traffic shares and quality scores per tier. See blended cost, blended quality, and savings vs routing everything to the premium model.
+Split traffic across multiple model tiers by complexity. Configure a classifier model, set traffic shares and quality scores per tier. See blended cost, blended quality, and savings vs routing everything to the premium model.
 
 ### Agent Cost Estimator
 
@@ -63,7 +63,7 @@ Multi-step agent economics. Configure up to 15 steps with per-step model selecti
 
 ### Unit Economics Dashboard
 
-Fleet-level P&L. Input COGS components (inference, embedding, vector DB, monitoring, fine-tuning), define 2-4 user segments with their own usage patterns, and see gross margin with zone alerts (healthy/monitor/action/critical). Compares AI cost per resolved outcome vs human cost.
+Fleet-level P&L. Input COGS components (inference, embedding, vector DB, monitoring, fine-tuning), define user segments with their own usage patterns and revenue, and see gross margin with zone alerts (healthy/monitor/action/critical).
 
 -----
 
@@ -89,7 +89,7 @@ Upstream changes propagate downstream automatically. Any synced field can be ove
 |---|---|
 | Next.js 16 | App Router, server components |
 | TypeScript 6 | Strict mode, typed calculations |
-| Recharts 3 | Charts (bar, pie, area, waterfall) |
+| Recharts 3 | Charts (bar, pie, area) |
 | Tailwind CSS 4 | Dark theme styling |
 | Zustand 5 | Cross-module state management |
 | Zod 4 | Input validation |
@@ -103,8 +103,8 @@ Calculation engine is framework-agnostic: pure functions with no React dependenc
 ## Local Development
 
 ```bash
-git clone https://github.com/alexe-ev/ai-economics-calculator.git
-cd ai-economics-calculator
+git clone https://github.com/alexe-ev/ai_economics_calculator.git
+cd ai_economics_calculator
 npm install
 npm run dev
 ```
