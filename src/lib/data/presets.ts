@@ -76,7 +76,7 @@ const agentCost: AgentCostInput = {
 
 const unitEconomics: UnitEconomicsInput = {
   numUsers: 200,
-  inferenceCostMonthly: 3768,
+  inferenceCostMonthly: 1320,
   embeddingCostMonthly: 20,
   vectorDbMonthly: 150,
   monitoringMonthly: 50,
@@ -85,8 +85,8 @@ const unitEconomics: UnitEconomicsInput = {
   safetyOverheadPct: 0.10,
   segments: [
     { name: "Segment 1", userPct: 0.6, avgRequestsPerMonth: 300, avgCostPerRequest: 0.015, revenuePerUser: 0 },
-    { name: "Segment 2", userPct: 0.3, avgRequestsPerMonth: 500, avgCostPerRequest: 0.055, revenuePerUser: 29 },
-    { name: "Segment 3", userPct: 0.1, avgRequestsPerMonth: 1200, avgCostPerRequest: 0.08, revenuePerUser: 99 },
+    { name: "Segment 2", userPct: 0.3, avgRequestsPerMonth: 400, avgCostPerRequest: 0.055, revenuePerUser: 29 },
+    { name: "Segment 3", userPct: 0.1, avgRequestsPerMonth: 1000, avgCostPerRequest: 0.08, revenuePerUser: 99 },
   ],
 };
 
